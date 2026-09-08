@@ -1,0 +1,15 @@
+StudyTools important cleanup/changes
+====================================
+
+1. Project name changed from the generic React package name to "studytools".
+2. App version remains 1.1.0.
+3. TypeScript pinned to 4.9.5 for compatibility with react-scripts 5.
+4. Capacitor Core/Android/CLI dependencies added.
+5. capacitor.config.ts added with appId com.studytools.app and webDir build.
+6. GitHub Actions workflow added at .github/workflows/android-debug.yml.
+7. Duplicate public/sw.js removed; public/service-worker.js is the single service worker.
+8. PWA manifest improved with PNG icon fallbacks when present.
+9. .gitignore added to prevent node_modules and Android build/cache files from being uploaded.
+10. README_GITHUB_APK.md added with the GitHub APK build steps.
+
+This ZIP is a cleaned web project prepared for GitHub Actions. It does not contain a generated android/ folder because the workflow creates it automatically.
