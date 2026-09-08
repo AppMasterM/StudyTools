@@ -15,41 +15,131 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # --------------------------------------------------
+      # 1. Download the GitHub repository
+      # --------------------------------------------------
       - name: Checkout project
         uses: actions/checkout@v4
 
+      # --------------------------------------------------
+      # 2. Find the folder containing package.json
+      # --------------------------------------------------
+      - name: Find StudyTools project folder
+        shell: bash
+        run: |
+          set -e
+
+          PROJECT_DIR="$(find . \
+            -name package.json \
+            -not -path '*/node_modules/*' \
+            -not -path '*/android/*' \
+            -print -quit)"
+
+          if [ -z "$PROJECT_DIR" ]; then
+            echo "ERROR: package.json was not found."
+            echo "Repository contents:"
+            find . -maxdepth 4 -type f | sort
+            exit 1
+          fi
+
+          PROJECT_DIR="$(dirname "$PROJECT_DIR")"
+
+          if [ "$PROJECT_DIR" = "." ]; then
+            PROJECT_DIR="."
+          else
+            PROJECT_DIR="${PROJECT_DIR#./}"
+          fi
+
+          echo "Project folder found: $PROJECT_DIR"
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+
+      # --------------------------------------------------
+      # 3. Set up Node.js
+      # --------------------------------------------------
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
+      # --------------------------------------------------
+      # 4. Set up Java 17 for Android/Gradle
+      # --------------------------------------------------
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
+      # --------------------------------------------------
+      # 5. Show the project files for easier diagnostics
+      # --------------------------------------------------
+      - name: Verify project
+        shell: bash
+        run: |
+          set -e
+
+          echo "Project directory:"
+          echo "$PROJECT_DIR"
+
+          echo ""
+          echo "Project files:"
+          find "$PROJECT_DIR" -maxdepth 2 -type f | sort
+
+          echo ""
+          echo "package.json:"
+          cat "$PROJECT_DIR/package.json"
+
+      # --------------------------------------------------
+      # 6. Install React/Capacitor dependencies
+      # --------------------------------------------------
       - name: Install npm dependencies
+        working-directory: ${{ env.PROJECT_DIR }}
         run: npm install
 
-      - name: Build StudyTools
+      # --------------------------------------------------
+      # 7. Build the React web application
+      # --------------------------------------------------
+      - name: Build StudyTools web app
+        working-directory: ${{ env.PROJECT_DIR }}
         run: npm run build
 
+      # --------------------------------------------------
+      # 8. Install Capacitor Android packages
+      # --------------------------------------------------
+      - name: Install Capacitor Android
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: npm install @capacitor/core @capacitor/cli @capacitor/android
+
+      # --------------------------------------------------
+      # 9. Create the Android project
+      # --------------------------------------------------
       - name: Add Android platform
+        working-directory: ${{ env.PROJECT_DIR }}
         run: npx cap add android
 
+      # --------------------------------------------------
+      # 10. Copy the web app into Android
+      # --------------------------------------------------
       - name: Sync Capacitor
+        working-directory: ${{ env.PROJECT_DIR }}
         run: npx cap sync android
 
-      - name: Build APK
-        working-directory: android
+      # --------------------------------------------------
+      # 11. Build the Android Debug APK
+      # --------------------------------------------------
+      - name: Build Debug APK
+        working-directory: ${{ env.PROJECT_DIR }}/android
+        shell: bash
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
-      - name: Save APK
+      # --------------------------------------------------
+      # 12. Upload the finished APK
+      # --------------------------------------------------
+      - name: Upload StudyTools APK
         uses: actions/upload-artifact@v4
         with:
           name: StudyTools-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: ${{ env.PROJECT_DIR }}/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
