@@ -1,4 +1,4 @@
-name: Build StudyTools Android APK
+name: Build StudyTools Signed Release
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    name: Build Debug APK
+    name: Build Signed APK and AAB
     runs-on: ubuntu-latest
 
     steps:
@@ -31,7 +31,6 @@ jobs:
 
           if [ -z "$PROJECT_DIR" ]; then
             echo "ERROR: package.json was not found."
-            find . -maxdepth 5 -type f | sort
             exit 1
           fi
 
@@ -42,8 +41,8 @@ jobs:
             PROJECT_DIR="."
           fi
 
-          echo "Project folder: $PROJECT_DIR"
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+          echo "StudyTools project folder: $PROJECT_DIR"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -56,22 +55,12 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Check Java version
+      - name: Check versions
         run: |
+          node --version
+          npm --version
           java -version
           javac -version
-
-      - name: Verify project
-        working-directory: ${{ env.PROJECT_DIR }}
-        run: |
-          echo "Project:"
-          pwd
-          echo ""
-          echo "Files:"
-          find . -maxdepth 2 -type f | sort
-          echo ""
-          echo "package.json:"
-          cat package.json
 
       - name: Install npm dependencies
         working-directory: ${{ env.PROJECT_DIR }}
@@ -81,9 +70,12 @@ jobs:
         working-directory: ${{ env.PROJECT_DIR }}
         run: npm run build
 
-      - name: Install Capacitor Android
+      - name: Install Capacitor packages
         working-directory: ${{ env.PROJECT_DIR }}
-        run: npm install @capacitor/core @capacitor/cli @capacitor/android
+        run: |
+          npm install @capacitor/core@7.4.3
+          npm install @capacitor/cli@7.4.3
+          npm install @capacitor/android@7.4.3
 
       - name: Add Android platform
         working-directory: ${{ env.PROJECT_DIR }}
@@ -93,16 +85,154 @@ jobs:
         working-directory: ${{ env.PROJECT_DIR }}
         run: npx cap sync android
 
-      - name: Build Debug APK
+      - name: Check signing secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -e
+
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "ERROR: KEYSTORE_BASE64 is missing."
+            exit 1
+          fi
+
+          if [ -z "$KEYSTORE_PASSWORD" ]; then
+            echo "ERROR: KEYSTORE_PASSWORD is missing."
+            exit 1
+          fi
+
+          if [ -z "$KEY_ALIAS" ]; then
+            echo "ERROR: KEY_ALIAS is missing."
+            exit 1
+          fi
+
+          if [ -z "$KEY_PASSWORD" ]; then
+            echo "ERROR: KEY_PASSWORD is missing."
+            exit 1
+          fi
+
+          echo "All four signing secrets are available."
+
+      - name: Decode release keystore
+        working-directory: ${{ env.PROJECT_DIR }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          set -e
+
+          echo "$KEYSTORE_BASE64" | base64 --decode > android/studytools-release.jks
+
+          if [ ! -s android/studytools-release.jks ]; then
+            echo "ERROR: Keystore was not created."
+            exit 1
+          fi
+
+          echo "Release keystore decoded successfully."
+
+      - name: Configure release signing
+        working-directory: ${{ env.PROJECT_DIR }}
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -e
+
+          cat > android/app/signing.gradle <<'EOF'
+          android {
+              signingConfigs {
+                  release {
+                      storeFile file(project.findProperty("STUDYTOOLS_RELEASE_STORE_FILE"))
+                      storePassword project.findProperty("STUDYTOOLS_RELEASE_STORE_PASSWORD")
+                      keyAlias project.findProperty("STUDYTOOLS_RELEASE_KEY_ALIAS")
+                      keyPassword project.findProperty("STUDYTOOLS_RELEASE_KEY_PASSWORD")
+                  }
+              }
+
+              buildTypes {
+                  release {
+                      signingConfig signingConfigs.release
+                      minifyEnabled false
+                  }
+              }
+          }
+          EOF
+
+          cat >> android/app/build.gradle <<'EOF'
+
+          apply from: "signing.gradle"
+          EOF
+
+          cat >> android/gradle.properties <<EOF
+
+          STUDYTOOLS_RELEASE_STORE_FILE=../studytools-release.jks
+          STUDYTOOLS_RELEASE_STORE_PASSWORD=${KEYSTORE_PASSWORD}
+          STUDYTOOLS_RELEASE_KEY_ALIAS=${KEY_ALIAS}
+          STUDYTOOLS_RELEASE_KEY_PASSWORD=${KEY_PASSWORD}
+          EOF
+
+          echo "Release signing configured."
+
+      - name: Verify signing configuration
         working-directory: ${{ env.PROJECT_DIR }}/android
-        shell: bash
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew signingReport --no-daemon
 
-      - name: Upload StudyTools APK
+      - name: Build signed APK
+        working-directory: ${{ env.PROJECT_DIR }}/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Build signed AAB
+        working-directory: ${{ env.PROJECT_DIR }}/android
+        run: |
+          chmod +x gradlew
+          ./gradlew bundleRelease --no-daemon
+
+      - name: Verify release files
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          set -e
+
+          APK="android/app/build/outputs/apk/release/app-release.apk"
+          AAB="android/app/build/outputs/bundle/release/app-release.aab"
+
+          if [ ! -f "$APK" ]; then
+            echo "ERROR: Release APK was not created."
+            exit 1
+          fi
+
+          if [ ! -f "$AAB" ]; then
+            echo "ERROR: Release AAB was not created."
+            exit 1
+          fi
+
+          echo "========================================"
+          echo "SIGNED APK CREATED SUCCESSFULLY"
+          echo "========================================"
+          ls -lh "$APK"
+
+          echo ""
+          echo "========================================"
+          echo "SIGNED AAB CREATED SUCCESSFULLY"
+          echo "========================================"
+          ls -lh "$AAB"
+
+      - name: Upload signed APK
         uses: actions/upload-artifact@v4
         with:
-          name: StudyTools-debug-apk
-          path: ${{ env.PROJECT_DIR }}/android/app/build/outputs/apk/debug/app-debug.apk
+          name: StudyTools-signed-release-APK
+          path: ${{ env.PROJECT_DIR }}/android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+
+      - name: Upload signed AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: StudyTools-signed-release-AAB
+          path: ${{ env.PROJECT_DIR }}/android/app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error
