@@ -1,3 +1,4 @@
+
 name: Build StudyTools Signed Release
 
 on:
@@ -5,6 +6,7 @@ on:
   push:
     branches:
       - main
+      - free-premium
 
 permissions:
   contents: read
@@ -23,22 +25,12 @@ jobs:
         run: |
           set -e
 
-          PROJECT_DIR="$(find . \
-            -name package.json \
-            -not -path '*/node_modules/*' \
-            -not -path '*/android/*' \
-            -print -quit)"
+          PROJECT_DIR="StudyTools_Complete_Corrected/StudyTools"
 
-          if [ -z "$PROJECT_DIR" ]; then
-            echo "ERROR: package.json was not found."
+          if [ ! -f "$PROJECT_DIR/package.json" ]; then
+            echo "ERROR: StudyTools package.json was not found at $PROJECT_DIR."
+            echo "Check the repository folder structure."
             exit 1
-          fi
-
-          PROJECT_DIR="$(dirname "$PROJECT_DIR")"
-          PROJECT_DIR="${PROJECT_DIR#./}"
-
-          if [ -z "$PROJECT_DIR" ]; then
-            PROJECT_DIR="."
           fi
 
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
@@ -212,15 +204,10 @@ jobs:
             exit 1
           fi
 
-          echo "========================================"
           echo "SIGNED APK CREATED SUCCESSFULLY"
-          echo "========================================"
           ls -lh "$APK"
 
-          echo ""
-          echo "========================================"
           echo "SIGNED AAB CREATED SUCCESSFULLY"
-          echo "========================================"
           ls -lh "$AAB"
 
       - name: Upload signed APK
