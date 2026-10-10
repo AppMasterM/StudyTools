@@ -1,4 +1,5 @@
 import React from "react";
+import "./EditionBanner.css";
 
 export default function EditionBanner() {
 return (
