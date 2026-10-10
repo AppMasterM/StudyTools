@@ -1,7 +1,6 @@
 import React, { Component, useEffect, useMemo, useState } from "react";
 import "./App.css";
-import EditionBanner from "./
-EditionBanner";
+import EditionBanner from "./EditionBanner";
 
 const NOTES_KEY = "studytools-notes";
 const PLANNER_KEY = "studytools-planner";
