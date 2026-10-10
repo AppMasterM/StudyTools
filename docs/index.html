@@ -1,0 +1,558 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="StudyTools helps students organize their studies, plan their work, and learn smarter.">
+  <title>StudyTools — Study Smarter</title>
+  <style>
+    :root {
+      --bg: #080d1b;
+      --panel: #111a30;
+      --text: #f4f7ff;
+      --muted: #aab6d0;
+      --primary: #7c8cff;
+      --accent: #42dfb2;
+      --border: rgba(255,255,255,.10);
+    }* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.65;
+}
+
+a { color: inherit; text-decoration: none; }
+
+.container {
+  width: min(1100px, 90%);
+  margin: auto;
+}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(8,13,27,.94);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(14px);
+}
+
+nav {
+  min-height: 72px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -.5px;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  color: #07111c;
+  font-size: 1.3rem;
+  background: linear-gradient(135deg, var(--accent), var(--primary));
+}
+
+.nav-link {
+  color: var(--muted);
+  font-size: .94rem;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), #9b76ff);
+  color: white;
+  font-weight: 750;
+  border: 0;
+  cursor: pointer;
+  box-shadow: 0 8px 28px rgba(124,140,255,.18);
+}
+
+.button.secondary {
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.hero {
+  padding: 86px 0 70px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 80% 20%, rgba(124,140,255,.18), transparent 42%),
+    radial-gradient(ellipse at 10% 80%, rgba(66,223,178,.09), transparent 40%);
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  align-items: center;
+  gap: 48px;
+}
+
+.eyebrow {
+  display: inline-block;
+  color: var(--accent);
+  background: rgba(66,223,178,.09);
+  border: 1px solid rgba(66,223,178,.24);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: .82rem;
+  font-weight: 750;
+}
+
+h1 {
+  margin: 20px 0;
+  font-size: clamp(2.6rem, 6vw, 4.6rem);
+  line-height: 1.08;
+  letter-spacing: -2.5px;
+}
+
+h1 span {
+  background: linear-gradient(100deg, var(--accent), #a7b1ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lead {
+  max-width: 580px;
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.small-note {
+  color: var(--muted);
+  font-size: .83rem;
+  margin-top: 16px;
+}
+
+.preview {
+  padding: 22px;
+  border-radius: 26px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: linear-gradient(145deg, #172440, #0e1528);
+  box-shadow: 0 30px 90px rgba(0,0,0,.35);
+  transform: rotate(1deg);
+}
+
+.preview-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.dots { display: flex; gap: 5px; }
+.dots i {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #7785a8;
+}
+
+.preview-label { color: var(--muted); font-size: .82rem; }
+
+.welcome-card {
+  padding: 22px;
+  border-radius: 18px;
+  background: linear-gradient(120deg, #6f80f3, #8871e9);
+  margin-bottom: 14px;
+}
+
+.welcome-card h3 { margin: 0 0 5px; font-size: 1.25rem; }
+.welcome-card p { margin: 0; opacity: .88; font-size: .9rem; }
+
+.preview-items {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.preview-item {
+  padding: 16px;
+  background: rgba(255,255,255,.055);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+}
+
+.preview-item .emoji { font-size: 1.5rem; }
+.preview-item strong { display: block; margin-top: 6px; }
+.preview-item small { color: var(--muted); }
+
+section { padding: 76px 0; }
+
+.section-heading {
+  max-width: 650px;
+  margin: 0 auto 38px;
+  text-align: center;
+}
+
+.section-heading h2 {
+  font-size: clamp(1.9rem, 4vw, 2.8rem);
+  letter-spacing: -1px;
+  line-height: 1.2;
+  margin: 0 0 12px;
+}
+
+.section-heading p { color: var(--muted); margin: 0; }
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.feature {
+  padding: 25px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 19px;
+}
+
+.feature-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  background: rgba(124,140,255,.13);
+  border-radius: 14px;
+  font-size: 1.5rem;
+  margin-bottom: 17px;
+}
+
+.feature h3 { margin: 0 0 8px; }
+.feature p { color: var(--muted); font-size: .94rem; margin: 0; }
+
+.benefits {
+  background: #0c1325;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.benefit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 44px;
+  align-items: center;
+}
+
+.benefit-grid h2 {
+  font-size: clamp(1.9rem, 4vw, 2.7rem);
+  line-height: 1.2;
+  letter-spacing: -1px;
+}
+
+.benefit-grid p { color: var(--muted); }
+
+.check-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.check-list li::before {
+  content: "✓";
+  color: var(--accent);
+  font-weight: 900;
+  margin-right: 10px;
+}
+
+.steps { display: grid; gap: 15px; }
+
+.step {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--panel);
+}
+
+.step-number {
+  min-width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  background: rgba(124,140,255,.16);
+  color: #c5ccff;
+  border-radius: 12px;
+  font-weight: 800;
+}
+
+.step h3 { margin: 0 0 4px; }
+.step p { color: var(--muted); margin: 0; font-size: .92rem; }
+
+.cta {
+  text-align: center;
+  padding: 54px 28px;
+  border-radius: 26px;
+  border: 1px solid rgba(124,140,255,.3);
+  background:
+    radial-gradient(ellipse at top right, rgba(124,140,255,.2), transparent 55%),
+    var(--panel);
+}
+
+.cta h2 { font-size: clamp(2rem, 5vw, 3rem); margin: 0 0 12px; }
+.cta p { max-width: 600px; color: var(--muted); margin: 0 auto 24px; }
+
+.faq-list { max-width: 760px; margin: auto; display: grid; gap: 12px; }
+
+details {
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--panel);
+}
+
+summary { cursor: pointer; font-weight: 700; }
+details p { color: var(--muted); margin-bottom: 0; }
+
+footer {
+  padding: 28px 0;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: .88rem;
+}
+
+.footer-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 760px) {
+  .hero { padding: 60px 0 48px; }
+  .hero-grid, .benefit-grid { grid-template-columns: 1fr; gap: 30px; }
+  .features { grid-template-columns: 1fr; }
+  .preview { transform: none; }
+  .nav-link { display: none; }
+  section { padding: 58px 0; }
+  h1 { letter-spacing: -1.5px; }
+}
+
+@media (min-width: 600px) and (max-width: 900px) {
+  .features { grid-template-columns: repeat(2, 1fr); }
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="container">
+      <a class="brand" href="#home" aria-label="StudyTools home">
+        <span class="logo">S</span>
+        <span>StudyTools</span>
+      </a>
+      <a class="nav-link" href="#features">Features</a>
+      <a class="nav-link" href="#about">Why StudyTools</a>
+      <a class="button" href="#get-app">Get the app</a>
+    </nav>
+  </header>  <main>
+    <section class="hero" id="home">
+      <div class="container hero-grid">
+        <div>
+          <span class="eyebrow">YOUR STUDY COMPANION</span>
+          <h1>Study smarter.<br><span>Achieve more.</span></h1>
+          <p class="lead">
+            Make your study routine simpler with StudyTools — a student
+            toolkit designed to help you organize your work, plan ahead,
+            and focus on learning.
+          </p>
+          <div class="hero-actions">
+            <a class="button" href="#get-app">Explore StudyTools <span aria-hidden="true">→</span></a>
+            <a class="button secondary" href="#features">Discover features</a>
+          </div>
+          <p class="small-note">Built for students. Designed for everyday learning.</p>
+        </div>    <div class="preview" aria-label="Illustrative StudyTools interface preview">
+      <div class="preview-top">
+        <div class="brand"><span class="logo">S</span><span>StudyTools</span></div>
+        <div class="dots" aria-hidden="true"><i></i><i></i><i></i></div>
+      </div>
+      <div class="welcome-card">
+        <h3>Your next great study session starts here.</h3>
+        <p>Small steps. Consistent progress.</p>
+      </div>
+      <div class="preview-items">
+        <div class="preview-item"><span class="emoji">📚</span><strong>Study</strong><small>Keep learning</small></div>
+        <div class="preview-item"><span class="emoji">🗓️</span><strong>Plan</strong><small>Stay organized</small></div>
+        <div class="preview-item"><span class="emoji">🎯</span><strong>Focus</strong><small>Work toward goals</small></div>
+        <div class="preview-item"><span class="emoji">✨</span><strong>Progress</strong><small>One step at a time</small></div>
+      </div>
+      <p class="preview-label" style="margin:18px 0 0">Illustrative preview — not an app screenshot.</p>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="container">
+    <div class="section-heading">
+      <h2>Make studying feel more manageable</h2>
+      <p>A simple place to support your learning routine without adding unnecessary complexity.</p>
+    </div>
+    <div class="features">
+      <article class="feature">
+        <div class="feature-icon">📘</div>
+        <h3>Student-friendly tools</h3>
+        <p>Use a study-focused toolkit designed around the everyday needs of students.</p>
+      </article>
+      <article class="feature">
+        <div class="feature-icon">🧭</div>
+        <h3>Organize your routine</h3>
+        <p>Build better habits by approaching your study work one task at a time.</p>
+      </article>
+      <article class="feature">
+        <div class="feature-icon">⚡</div>
+        <h3>Simple experience</h3>
+        <p>Get started with a straightforward interface made for everyday use.</p>
+      </article>
+      <article class="feature">
+        <div class="feature-icon">📱</div>
+        <h3>Made for Android</h3>
+        <p>Take your study toolkit with you on your compatible Android phone.</p>
+      </article>
+      <article class="feature">
+        <div class="feature-icon">🎓</div>
+        <h3>For everyday learning</h3>
+        <p>Support your school, college, or personal learning routine.</p>
+      </article>
+      <article class="feature">
+        <div class="feature-icon">🌱</div>
+        <h3>Keep improving</h3>
+        <p>Make consistent progress by creating a routine that works for you.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="benefits" id="about">
+  <div class="container benefit-grid">
+    <div>
+      <span class="eyebrow">LESS CLUTTER, MORE CLARITY</span>
+      <h2>Your learning journey deserves a better routine.</h2>
+      <p>
+        StudyTools is built around a simple idea: studying becomes easier
+        to approach when your tools are easy to use.
+      </p>
+    </div>
+    <ul class="check-list">
+      <li>A clean, student-focused experience</li>
+      <li>Useful support for study planning</li>
+      <li>Designed with mobile use in mind</li>
+      <li>A practical companion for learning goals</li>
+    </ul>
+  </div>
+</section>
+
+<section id="how-it-works">
+  <div class="container">
+    <div class="section-heading">
+      <h2>Getting started is simple</h2>
+      <p>Follow these steps when the official download is available.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="step-number">1</span>
+        <div><h3>Explore the app</h3><p>Review the available StudyTools information and features.</p></div>
+      </div>
+      <div class="step">
+        <span class="step-number">2</span>
+        <div><h3>Get the official version</h3><p>Use the verified download or purchase link once it is published here.</p></div>
+      </div>
+      <div class="step">
+        <span class="step-number">3</span>
+        <div><h3>Install and get started</h3><p>Follow the Android installation instructions provided with the release.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="get-app">
+  <div class="container">
+    <div class="cta">
+      <span class="eyebrow">STUDYTOOLS FOR ANDROID</span>
+      <h2>Ready to study smarter?</h2>
+      <p>
+        The official download or purchase link will be added here after
+        release details are finalized. Check back soon for updates.
+      </p>
+      <a class="button" href="#contact">Release information <span aria-hidden="true">→</span></a>
+      <p class="small-note">No payment is collected on this website at this stage.</p>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="container">
+    <div class="section-heading">
+      <h2>Frequently asked questions</h2>
+      <p>Helpful information about StudyTools.</p>
+    </div>
+    <div class="faq-list">
+      <details>
+        <summary>What is StudyTools?</summary>
+        <p>StudyTools is a student toolkit intended to support studying, planning, and learning.</p>
+      </details>
+      <details>
+        <summary>How can I download the Android app?</summary>
+        <p>The official APK link will be published here after the release and download process are finalized.</p>
+      </details>
+      <details>
+        <summary>Is the app free?</summary>
+        <p>Pricing has not been announced on this website yet. Check the official release information before making a purchase.</p>
+      </details>
+      <details>
+        <summary>How can I get help?</summary>
+        <p>Use the official contact information listed below once it has been added by the developer.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="container">
+    <div class="section-heading">
+      <h2>Stay connected</h2>
+      <p>Official contact and support details will be added here before public launch.</p>
+    </div>
+  </div>
+</section>
+
+  </main>  <footer>
+    <div class="container footer-row">
+      <span>© <span id="year"></span> StudyTools. All rights reserved.</span>
+      <span>Made for learners, everywhere.</span>
+    </div>
+  </footer>  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script></body>
+</html>
