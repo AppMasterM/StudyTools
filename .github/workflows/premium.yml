@@ -54,10 +54,12 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease --no-daemon
 
+      
       - name: Upload Premium APK
         uses: actions/upload-artifact@v4
         with:
           name: StudyTools-Premium-APK
-          path: StudyTools_Complete_Corrected/StudyTools/android/app/build/outputs/apk/release/app-release.apk
+          path: StudyTools_Complete_Corrected/StudyTools/android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
+          
           
