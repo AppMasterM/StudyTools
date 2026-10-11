@@ -1,61 +1,63 @@
+
 name: Build StudyTools Premium APK
 
 'on':
-workflow_dispatch:
-push:
-branches:
-- premium-edition
-paths:
-- "StudyTools_Complete_Corrected/StudyTools/**"
-- ".github/workflows/premium.yml"
+  workflow_dispatch:
+  push:
+    branches:
+      - premium-edition
+    paths:
+      - "StudyTools_Complete_Corrected/StudyTools/**"
+      - ".github/workflows/premium.yml"
 
 permissions:
-contents: read
+  contents: read
 
 jobs:
-build:
-name: Build Premium APK
-runs-on: ubuntu-latest
+  build:
+    name: Build Premium APK
+    runs-on: ubuntu-latest
 
-steps:
-  - name: Checkout repository
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  - name: Set up Node.js
-    uses: actions/setup-node@v4
-    with:
-      node-version: 22
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
-  - name: Set up Java
-    uses: actions/setup-java@v4
-    with:
-      distribution: temurin
-      java-version: 21
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
 
-  - name: Install dependencies
-    working-directory: StudyTools_Complete_Corrected/StudyTools
-    run: npm install
+      - name: Install dependencies
+        working-directory: StudyTools_Complete_Corrected/StudyTools
+        run: npm install
 
-  - name: Build web app
-    working-directory: StudyTools_Complete_Corrected/StudyTools
-    run: npm run build
+      - name: Build web app
+        working-directory: StudyTools_Complete_Corrected/StudyTools
+        run: npm run build
 
-  - name: Install Android platform
-    working-directory: StudyTools_Complete_Corrected/StudyTools
-    run: |
-      npm install @capacitor/core@7.4.3 @capacitor/cli@7.4.3 @capacitor/android@7.4.3
-      npx cap add android
-      npx cap sync android
+      - name: Install Android platform
+        working-directory: StudyTools_Complete_Corrected/StudyTools
+        run: |
+          npm install @capacitor/core@7.4.3 @capacitor/cli@7.4.3 @capacitor/android@7.4.3
+          npx cap add android
+          npx cap sync android
 
-  - name: Build release APK
-    working-directory: StudyTools_Complete_Corrected/StudyTools/android
-    run: |
-      chmod +x gradlew
-      ./gradlew assembleRelease --no-daemon
+      - name: Build release APK
+        working-directory: StudyTools_Complete_Corrected/StudyTools/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
 
-  - name: Upload Premium APK
-    uses: actions/upload-artifact@v4
-    with:
-      name: StudyTools-Premium-APK
-      path: StudyTools_Complete_Corrected/StudyTools/android/app/build/outputs/apk/release/app-release.apk
-      if-no-files-found: error
+      - name: Upload Premium APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: StudyTools-Premium-APK
+          path: StudyTools_Complete_Corrected/StudyTools/android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+          
