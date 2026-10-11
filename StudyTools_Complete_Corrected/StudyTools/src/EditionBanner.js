@@ -5,22 +5,24 @@ export default function EditionBanner() {
 return (
 <section
 className="edition-banner"
-aria-label="StudyTools Free Edition"
+aria-label="StudyTools Premium Edition"
 >
 <div className="edition-banner-icon" aria-hidden="true">
-📚
+👑
 </div>
 
   <div className="edition-banner-content">
     <span className="edition-banner-label">
-      FREE EDITION
+      PREMIUM EDITION
     </span>
 
-    <h3>Study smarter with StudyTools</h3>
+    <h3>Make every study session count</h3>
 
     <p>
-      Enjoy your study tools, notes and planner.
-      Premium features are planned for a future update.
+      Your StudyTools Premium edition is being prepared.
+      Your existing study tools, notes and planner are ready
+      to help you stay organized while additional premium
+      features are developed.
     </p>
   </div>
 </section>
