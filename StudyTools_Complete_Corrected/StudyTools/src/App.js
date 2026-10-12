@@ -1,6 +1,9 @@
+
 import React, { Component, useEffect, useMemo, useState } from "react";
 import "./App.css";
 import EditionBanner from "./EditionBanner";
+import StudyAnalytics from "./StudyAnalytics";
+
 
 const NOTES_KEY = "studytools-notes";
 const PLANNER_KEY = "studytools-planner";
@@ -822,15 +825,47 @@ function StudyTimer() {
 
   const [running, setRunning] = useState(false);
 
+  
   useEffect(() => {
     if (!running) {
       return;
     }
 
+    let sessionRecorded = false;
+
     const interval = setInterval(() => {
       setSeconds((current) => {
         if (current <= 1) {
           setRunning(false);
+
+          if (!sessionRecorded) {
+            sessionRecorded = true;
+
+            try {
+              const key = "studytools-analytics";
+              const saved = JSON.parse(
+                localStorage.getItem(key) || "[]"
+              );
+              const sessions = Array.isArray(saved) ? saved : [];
+
+              sessions.push({
+                id: Date.now(),
+                durationMinutes: 25,
+                completedAt: new Date().toISOString(),
+              });
+
+              localStorage.setItem(
+                key,
+                JSON.stringify(sessions.slice(-500))
+              );
+            } catch (error) {
+              console.warn(
+                "StudyTools: Could not save focus session.",
+                error
+              );
+            }
+          }
+
           return 0;
         }
 
@@ -840,6 +875,7 @@ function StudyTimer() {
 
     return () => clearInterval(interval);
   }, [running]);
+              
 
   const minutes = Math.floor(seconds / 60);
 
@@ -1256,6 +1292,8 @@ function Home({ setPage, setActiveTool }) {
       </section>
 
       <StudyOverview />
+      <StudyAnalytics />
+              
 
       <div className="section-heading">
         <div>
