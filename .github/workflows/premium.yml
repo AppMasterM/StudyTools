@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   build:
-    name: Build Premium APK
+    name: Build Signed Premium APK
     runs-on: ubuntu-latest
 
     steps:
@@ -48,18 +48,78 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: Build release APK
+      - name: Decode signing keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "KEYSTORE_BASE64 secret is empty."
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/studytools-premium.jks"
+          if [ ! -s "$RUNNER_TEMP/studytools-premium.jks" ]; then
+            echo "Decoded keystore is empty."
+            exit 1
+          fi
+
+      - name: Configure Android release signing
+        working-directory: StudyTools_Complete_Corrected/StudyTools/android
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
+            echo "One or more signing secrets are empty."
+            exit 1
+          fi
+
+          cat >> app/build.gradle <<'GRADLE'
+
+          android {
+              signingConfigs {
+                  release {
+                      storeFile file(System.getenv("RUNNER_TEMP") + "/studytools-premium.jks")
+                      storePassword System.getenv("KEYSTORE_PASSWORD")
+                      keyAlias System.getenv("KEY_ALIAS")
+                      keyPassword System.getenv("KEY_PASSWORD")
+                  }
+              }
+
+              buildTypes {
+                  release {
+                      signingConfig signingConfigs.release
+                  }
+              }
+          }
+          GRADLE
+
+      - name: Build signed release APK
         working-directory: StudyTools_Complete_Corrected/StudyTools/android
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease --no-daemon
 
-      
-      - name: Upload Premium APK
+      - name: Verify APK signature
+        working-directory: StudyTools_Complete_Corrected/StudyTools/android
+        run: |
+          APK="app/build/outputs/apk/release/app-release.apk"
+          if [ ! -f "$APK" ]; then
+            echo "Expected release APK was not generated."
+            find app/build/outputs -type f -name "*.apk" -print
+            exit 1
+          fi
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)"
+          if [ -z "$APKSIGNER" ]; then
+            echo "Android apksigner was not found."
+            exit 1
+          fi
+          "$APKSIGNER" verify --verbose "$APK"
+
+      - name: Upload Signed Premium APK
         uses: actions/upload-artifact@v4
         with:
-          name: StudyTools-Premium-APK
-          path: StudyTools_Complete_Corrected/StudyTools/android/app/build/outputs/apk/release/*.apk
+          name: StudyTools-Premium-Signed-APK
+          path: StudyTools_Complete_Corrected/StudyTools/android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
-          
           
