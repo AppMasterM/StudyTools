@@ -1913,7 +1913,6 @@ function App() {
   />
 )}
          
-        )}
 
         {page === "tool" && renderTool()}
       </main>
