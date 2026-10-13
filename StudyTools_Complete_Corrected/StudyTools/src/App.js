@@ -3,11 +3,21 @@ import React, { Component, useEffect, useMemo, useState } from "react";
 import "./App.css";
 import EditionBanner from "./EditionBanner";
 import StudyAnalytics from "./StudyAnalytics";
+import PremiumThemes from "./PremiumThemes";
 
 
 const NOTES_KEY = "studytools-notes";
 const PLANNER_KEY = "studytools-planner";
 const THEME_KEY = "studytools-theme";
+const COLOR_THEME_KEY = "studytools-color-theme";
+
+const AVAILABLE_COLOR_THEMES = [
+  "classic",
+  "ocean",
+  "forest",
+  "purple",
+  "sunset",
+];
 
 const APP_VERSION = "1.1.0";
 
@@ -105,6 +115,19 @@ function safeReadTheme() {
   } catch (error) {
     console.warn("StudyTools: Could not read theme.", error);
     return false;
+  }
+}
+
+function safeReadColorTheme() {
+  try {
+    const savedTheme = localStorage.getItem(COLOR_THEME_KEY);
+
+    return AVAILABLE_COLOR_THEMES.includes(savedTheme)
+      ? savedTheme
+      : "classic";
+  } catch (error) {
+    console.warn("StudyTools: Could not read color theme.", error);
+    return "classic";
   }
 }
 
@@ -1371,7 +1394,12 @@ function ToolsPage({ setPage, setActiveTool }) {
    SETTINGS
    ========================================================= */
 
-function SettingsPage({ darkMode, setDarkMode }) {
+function SettingsPage({
+  darkMode,
+  setDarkMode,
+  colorTheme,
+  setColorTheme,
+}) {
   const [message, setMessage] = useState("");
 
   const [busy, setBusy] = useState(false);
@@ -1598,6 +1626,24 @@ function SettingsPage({ darkMode, setDarkMode }) {
       <div className="settings-section">
         <h3>Backup & Restore</h3>
 
+              <PremiumThemes
+  selectedTheme={colorTheme}
+  onSelectTheme={(nextTheme) => {
+    if (!AVAILABLE_COLOR_THEMES.includes(nextTheme)) {
+      return;
+    }
+
+    const saved = safeWriteString(COLOR_THEME_KEY, nextTheme);
+
+    if (saved) {
+      setColorTheme(nextTheme);
+      setMessage("Theme saved successfully.");
+    } else {
+      setMessage("Theme changed could not be saved. Please try again.");
+    }
+  }}
+/>
+
         <div className="settings-actions">
           <button
             className="settings-action"
@@ -1712,6 +1758,8 @@ function App() {
 
   const [darkMode, setDarkMode] = useState(safeReadTheme);
 
+  const [colorTheme, setColorTheme] = useState(safeReadColorTheme);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
@@ -1723,6 +1771,10 @@ function App() {
   useEffect(() => {
     safeWriteString(THEME_KEY, darkMode ? "dark" : "light");
   }, [darkMode]);
+
+  useEffect(() => {
+  safeWriteString(COLOR_THEME_KEY, colorTheme);
+}, [colorTheme]);
 
   if (loading) {
     return <LoadingScreen />;
@@ -1807,7 +1859,14 @@ function App() {
         )}
 
         {page === "settings" && (
-          <SettingsPage darkMode={darkMode} setDarkMode={setDarkMode} />
+  <SettingsPage
+    darkMode={darkMode}
+    setDarkMode={setDarkMode}
+    colorTheme={colorTheme}
+    setColorTheme={setColorTheme}
+  />
+)}
+         
         )}
 
         {page === "tool" && renderTool()}
