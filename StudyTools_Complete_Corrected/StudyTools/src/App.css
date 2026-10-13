@@ -1,4 +1,4 @@
-* {
+no* {
   box-sizing: border-box;
 }
 
@@ -1283,4 +1283,114 @@ textarea {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* =========================================================
+   STUDYTOOLS PREMIUM — COLOR THEMES
+   ========================================================= */
+
+/* Ocean Blue */
+.app.theme-ocean {
+  --bg: #edf8fc;
+  --card: #ffffff;
+  --text: #123042;
+  --muted: #58717f;
+  --border: #cce5ed;
+  --primary: #087ea4;
+  --primary-dark: #066584;
+  --soft: #d9f1f8;
+}
+
+/* Forest Green */
+.app.theme-forest {
+  --bg: #eff8f1;
+  --card: #ffffff;
+  --text: #173d2c;
+  --muted: #5e7869;
+  --border: #cce3d2;
+  --primary: #23845b;
+  --primary-dark: #176744;
+  --soft: #d9efdf;
+}
+
+/* Royal Purple */
+.app.theme-purple {
+  --bg: #f6f0ff;
+  --card: #ffffff;
+  --text: #322047;
+  --muted: #76668b;
+  --border: #e1d2f5;
+  --primary: #8957d5;
+  --primary-dark: #7040b8;
+  --soft: #eaddff;
+}
+
+/* Sunset */
+.app.theme-sunset {
+  --bg: #fff4ed;
+  --card: #ffffff;
+  --text: #492c24;
+  --muted: #89685c;
+  --border: #f2d5c5;
+  --primary: #df6848;
+  --primary-dark: #c45132;
+  --soft: #ffe2d3;
+}
+
+/* Keep dark mode dark while changing its accent color */
+.app.dark.theme-ocean {
+  --primary: #36b6df;
+  --primary-dark: #1595bd;
+  --soft: #173744;
+}
+
+.app.dark.theme-forest {
+  --primary: #55c58a;
+  --primary-dark: #36a96e;
+  --soft: #193b2c;
+}
+
+.app.dark.theme-purple {
+  --primary: #b18af4;
+  --primary-dark: #9469df;
+  --soft: #35264b;
+}
+
+.app.dark.theme-sunset {
+  --primary: #ff9978;
+  --primary-dark: #e87b5b;
+  --soft: #482b25;
+}
+
+/* Theme-specific home banner */
+.app.theme-ocean .hero-card {
+  background: linear-gradient(135deg, #087ea4, #36b6df);
+}
+
+.app.theme-forest .hero-card {
+  background: linear-gradient(135deg, #176744, #39a875);
+}
+
+.app.theme-purple .hero-card {
+  background: linear-gradient(135deg, #7040b8, #a77bea);
+}
+
+.app.theme-sunset .hero-card {
+  background: linear-gradient(135deg, #c45132, #f08b63);
+}
+
+.app.dark.theme-ocean .hero-card {
+  background: linear-gradient(135deg, #07516a, #087ea4);
+}
+
+.app.dark.theme-forest .hero-card {
+  background: linear-gradient(135deg, #164c35, #23845b);
+}
+
+.app.dark.theme-purple .hero-card {
+  background: linear-gradient(135deg, #49316e, #7040b8);
+}
+
+.app.dark.theme-sunset .hero-card {
+  background: linear-gradient(135deg, #713523, #b94f32);
 }
