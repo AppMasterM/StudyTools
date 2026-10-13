@@ -1848,7 +1848,7 @@ function App() {
   };
 
   return (
-    <div className={`app ${darkMode ? "dark" : ""}`}>
+    <div className={`app ${darkMode ? "dark" : ""} theme-${colorTheme}`}>
       <main className="app-content">
         {page === "home" && (
           <Home setPage={setPage} setActiveTool={setActiveTool} />
