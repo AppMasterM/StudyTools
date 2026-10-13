@@ -1412,44 +1412,40 @@ function SettingsPage({
         exportedAt: new Date().toISOString(),
 
         notes: safeReadArray(NOTES_KEY),
-
         planner: safeReadArray(PLANNER_KEY),
-
+        analytics: safeReadArray("studytools-analytics"),
         theme: (() => {
           try {
-            return localStorage.getItem(THEME_KEY) || "light";
+            const savedTheme = localStorage.getItem(THEME_KEY);
+            return savedTheme === "dark" ? "dark" : "light";
           } catch {
             return "light";
           }
         })(),
+        colorTheme: safeReadColorTheme(),
       };
 
-      const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: "application/json",
-      });
+      const blob = new Blob(
+        [JSON.stringify(data, null, 2)],
+        { type: "application/json" }
+      );
 
       const url = URL.createObjectURL(blob);
-
       const anchor = document.createElement("a");
 
       anchor.href = url;
-
       anchor.download = `studytools-backup-${new Date()
         .toISOString()
         .slice(0, 10)}.json`;
 
       document.body.appendChild(anchor);
-
       anchor.click();
-
       anchor.remove();
 
       URL.revokeObjectURL(url);
-
       setMessage("Backup exported successfully.");
     } catch (error) {
       console.error("Backup export failed:", error);
-
       setMessage("Could not export the backup.");
     }
   };
@@ -1463,12 +1459,134 @@ function SettingsPage({
 
     if (file.size > 5 * 1024 * 1024) {
       setMessage("Backup file is too large. Maximum size is 5 MB.");
-
       event.target.value = "";
       return;
     }
 
     setBusy(true);
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+
+        if (
+          !data ||
+          typeof data !== "object" ||
+          Array.isArray(data)
+        ) {
+          throw new Error("Invalid backup structure.");
+        }
+
+        if (data.app && data.app !== "StudyTools") {
+          throw new Error("This is not a StudyTools backup.");
+        }
+
+        if (
+          data.notes !== undefined &&
+          !Array.isArray(data.notes)
+        ) {
+          throw new Error("Notes data is invalid.");
+        }
+
+        if (
+          data.planner !== undefined &&
+          !Array.isArray(data.planner)
+        ) {
+          throw new Error("Planner data is invalid.");
+        }
+
+        if (
+          data.analytics !== undefined &&
+          !Array.isArray(data.analytics)
+        ) {
+          throw new Error("Analytics data is invalid.");
+        }
+
+        if (
+          data.theme !== undefined &&
+          data.theme !== "dark" &&
+          data.theme !== "light"
+        ) {
+          throw new Error("Theme data is invalid.");
+        }
+
+        if (
+          data.colorTheme !== undefined &&
+          !AVAILABLE_COLOR_THEMES.includes(data.colorTheme)
+        ) {
+          throw new Error("Color theme data is invalid.");
+        }
+
+        // Restore only fields that exist in the backup.
+        // Older backups without analytics or colorTheme remain supported.
+        if (Array.isArray(data.notes)) {
+          if (!safeWrite(NOTES_KEY, data.notes)) {
+            throw new Error("Could not restore notes.");
+          }
+        }
+
+        if (Array.isArray(data.planner)) {
+          if (!safeWrite(PLANNER_KEY, data.planner)) {
+            throw new Error("Could not restore planner.");
+          }
+        }
+
+        if (Array.isArray(data.analytics)) {
+          if (!safeWrite("studytools-analytics", data.analytics)) {
+            throw new Error("Could not restore analytics.");
+          }
+        }
+
+        if (data.theme === "dark" || data.theme === "light") {
+          if (!safeWriteString(THEME_KEY, data.theme)) {
+            throw new Error("Could not restore appearance.");
+          }
+        }
+
+        if (
+          typeof data.colorTheme === "string" &&
+          AVAILABLE_COLOR_THEMES.includes(data.colorTheme)
+        ) {
+          if (!safeWriteString(COLOR_THEME_KEY, data.colorTheme)) {
+            throw new Error("Could not restore the color theme.");
+          }
+        }
+
+        setMessage("Backup restored successfully. Reloading...");
+
+        window.setTimeout(() => {
+          window.location.reload();
+        }, 800);
+      } catch (error) {
+        console.error("Backup import failed:", error);
+
+        setMessage(
+          error?.message === "This is not a StudyTools backup."
+            ? error.message
+            : error?.message === "Could not restore notes." ||
+                error?.message === "Could not restore planner." ||
+                error?.message === "Could not restore analytics." ||
+                error?.message === "Could not restore appearance." ||
+                error?.message === "Could not restore the color theme."
+              ? error.message
+              : "This backup file is not valid."
+        );
+      } finally {
+        setBusy(false);
+        event.target.value = "";
+      }
+    };
+
+    reader.onerror = () => {
+      setBusy(false);
+      event.target.value = "";
+      setMessage("Could not read the backup file.");
+    };
+
+    reader.readAsText(file);
+  };
 
     const reader = new FileReader();
 
