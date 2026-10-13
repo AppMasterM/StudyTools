@@ -1574,79 +1574,7 @@ function SettingsPage({
               : "This backup file is not valid."
         );
       } finally {
-        setBusy(false);
-        event.target.value = "";
-      }
-    };
 
-    reader.onerror = () => {
-      setBusy(false);
-      event.target.value = "";
-      setMessage("Could not read the backup file.");
-    };
-
-    reader.readAsText(file);
-  };
-
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      try {
-        const data = JSON.parse(e.target.result);
-
-        if (!data || typeof data !== "object" || Array.isArray(data)) {
-          throw new Error("Invalid backup structure.");
-        }
-
-        if (data.app && data.app !== "StudyTools") {
-          throw new Error("This is not a StudyTools backup.");
-        }
-
-        if (data.notes !== undefined && !Array.isArray(data.notes)) {
-          throw new Error("Notes data is invalid.");
-        }
-
-        if (data.planner !== undefined && !Array.isArray(data.planner)) {
-          throw new Error("Planner data is invalid.");
-        }
-
-        if (
-          data.theme !== undefined &&
-          data.theme !== "dark" &&
-          data.theme !== "light"
-        ) {
-          throw new Error("Theme data is invalid.");
-        }
-
-        if (Array.isArray(data.notes)) {
-          safeWrite(NOTES_KEY, data.notes);
-        }
-
-        if (Array.isArray(data.planner)) {
-          safeWrite(PLANNER_KEY, data.planner);
-        }
-
-        if (data.theme === "dark" || data.theme === "light") {
-          safeWriteString(THEME_KEY, data.theme);
-        }
-
-        setMessage("Backup restored successfully. Reloading...");
-
-        setTimeout(() => {
-          window.location.reload();
-        }, 800);
-      } catch (error) {
-        console.error("Backup import failed:", error);
-
-        setMessage(
-          error?.message === "This is not a StudyTools backup."
-            ? error.message
-            : "This backup file is not valid."
-        );
-      } finally {
-        setBusy(false);
-      }
-    };
 
     reader.onerror = () => {
       setBusy(false);
