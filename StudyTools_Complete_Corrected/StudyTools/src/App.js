@@ -1573,12 +1573,14 @@ function SettingsPage({
               ? error.message
               : "This backup file is not valid."
         );
+      
       } finally {
-
+        setBusy(false);
+      }
+    };
 
     reader.onerror = () => {
       setBusy(false);
-
       setMessage("Could not read the backup file.");
     };
 
@@ -1586,6 +1588,7 @@ function SettingsPage({
 
     event.target.value = "";
   };
+      
 
   const clearNotes = () => {
     if (!window.confirm("Delete all saved notes?")) {
