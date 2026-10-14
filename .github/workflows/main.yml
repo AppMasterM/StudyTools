@@ -81,6 +81,32 @@ jobs:
         working-directory: ${{ env.PROJECT_DIR }}
         run: npx cap add android
 
+        
+      - name: Configure AdMob App ID
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          set -e
+
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+
+          if [ ! -f "$MANIFEST" ]; then
+            echo "ERROR: AndroidManifest.xml was not found."
+            exit 1
+          fi
+
+          if grep -q 'com.google.android.gms.ads.APPLICATION_ID' "$MANIFEST"; then
+            echo "AdMob App ID metadata already exists."
+          else
+            sed -i 's#</application>#    <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3190537928782946~4753960110" />\n    </application>#' "$MANIFEST"
+          fi
+
+          if ! grep -q 'xmlns:android=' "$MANIFEST"; then
+            echo "ERROR: Android namespace is missing."
+            exit 1
+          fi
+
+          echo "AdMob App ID configured."
+
       - name: Sync Capacitor
         working-directory: ${{ env.PROJECT_DIR }}
         run: npx cap sync android
