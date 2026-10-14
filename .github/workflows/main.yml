@@ -70,12 +70,15 @@ jobs:
         working-directory: ${{ env.PROJECT_DIR }}
         run: npm run build
 
+      
       - name: Install Capacitor packages
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
           npm install @capacitor/core@7.4.3
           npm install @capacitor/cli@7.4.3
           npm install @capacitor/android@7.4.3
+          npm install @capacitor-community/admob@7.0.3
+
 
       - name: Add Android platform
         working-directory: ${{ env.PROJECT_DIR }}
