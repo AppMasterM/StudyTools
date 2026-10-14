@@ -1,5 +1,11 @@
 import React, { Component, useEffect, useMemo, useState } from "react";
 import "./App.css";
+import { Capacitor } from "@capacitor/core";
+import {
+  AdMob,
+  BannerAdSize,
+  BannerAdPosition,
+} from "@capacitor-community/admob";
 
 const NOTES_KEY = "studytools-notes";
 const PLANNER_KEY = "studytools-planner";
@@ -1658,11 +1664,56 @@ function BottomNav({ page, setPage }) {
   );
 }
 
+
+/* =========================================================
+   ADMOB TEST BANNER
+   ========================================================= */
+
+function AdMobBanner() {
+  useEffect(() => {
+    let cancelled = false;
+
+    async function showTestBanner() {
+      if (Capacitor.getPlatform() !== "android") {
+        return;
+      }
+
+      try {
+        await AdMob.initialize();
+
+        if (cancelled) return;
+
+        await AdMob.showBanner({
+          adId: "ca-app-pub-3940256099942544/6300978111",
+          adSize: BannerAdSize.BANNER,
+          position: BannerAdPosition.BOTTOM_CENTER,
+          margin: 0,
+        });
+      } catch (error) {
+        console.error("StudyTools test banner error:", error);
+      }
+    }
+
+    showTestBanner();
+
+    return () => {
+      cancelled = true;
+      AdMob.removeBanner().catch((error) => {
+        console.warn("Could not remove test banner:", error);
+      });
+    };
+  }, []);
+
+  return null;
+}
+
+
 /* =========================================================
    MAIN APP
    ========================================================= */
 
 function App() {
+  
   const [loading, setLoading] = useState(true);
 
   const [page, setPage] = useState("home");
@@ -1756,6 +1807,8 @@ function App() {
 
   return (
     <div className={`app ${darkMode ? "dark" : ""}`}>
+    <AdMobBanner />
+    
       <main className="app-content">
         {page === "home" && (
           <Home setPage={setPage} setActiveTool={setActiveTool} />
