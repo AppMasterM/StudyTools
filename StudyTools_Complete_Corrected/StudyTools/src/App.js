@@ -3,6 +3,7 @@ import "./App.css";
 import { Capacitor } from "@capacitor/core";
 import {
   AdMob,
+  AdmobConsentStatus,
   BannerAdSize,
   BannerAdPosition,
 } from "@capacitor-community/admob";
@@ -1665,42 +1666,80 @@ function BottomNav({ page, setPage }) {
 }
 
 
+
 /* =========================================================
-   ADMOB TEST BANNER
+   ADMOB TEST BANNER WITH UMP CONSENT
+   Free StudyTools edition only
    ========================================================= */
 
 function AdMobBanner() {
   useEffect(() => {
     let cancelled = false;
+    let bannerShown = false;
 
-    async function showTestBanner() {
+    async function startTestBanner() {
       if (Capacitor.getPlatform() !== "android") {
         return;
       }
 
       try {
+        // Refresh consent information at each app launch.
+        let consentInfo = await AdMob.requestConsentInfo();
+
+        if (cancelled) return;
+
+        // Show the consent form when Google says it is required.
+        if (
+          consentInfo.isConsentFormAvailable &&
+          consentInfo.status === AdmobConsentStatus.REQUIRED
+        ) {
+          consentInfo = await AdMob.showConsentForm();
+        }
+
+        if (cancelled) return;
+
+        // Never request ads unless UMP allows it.
+        if (!consentInfo.canRequestAds) {
+          console.info(
+            "StudyTools: Ads not requested because consent is not ready."
+          );
+          return;
+        }
+
         await AdMob.initialize();
 
         if (cancelled) return;
 
+        // Google's official TEST banner ID for Android.
         await AdMob.showBanner({
           adId: "ca-app-pub-3940256099942544/6300978111",
           adSize: BannerAdSize.BANNER,
           position: BannerAdPosition.BOTTOM_CENTER,
           margin: 0,
         });
+
+        bannerShown = true;
       } catch (error) {
-        console.error("StudyTools test banner error:", error);
+        console.error(
+          "StudyTools: Consent or test banner setup failed:",
+          error
+        );
       }
     }
 
-    showTestBanner();
+    startTestBanner();
 
     return () => {
       cancelled = true;
-      AdMob.removeBanner().catch((error) => {
-        console.warn("Could not remove test banner:", error);
-      });
+
+      if (bannerShown) {
+        AdMob.removeBanner().catch((error) => {
+          console.warn(
+            "StudyTools: Could not remove test banner:",
+            error
+          );
+        });
+      }
     };
   }, []);
 
